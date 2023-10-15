@@ -20,7 +20,10 @@ mongoose.connect("mongodb://localhost:27017/qwitter")
 app.post('/', (req,res)=>{
     let tweet = new Tweet({
         text: req.body.text,
-        date: req.body.date
+        date: req.body.date,
+        type:req.body.type,
+        url: req.body.url,
+        offensive: req.body.offensive
     })
 
     tweet.save()

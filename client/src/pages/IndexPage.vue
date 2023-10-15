@@ -14,6 +14,12 @@
         </template>
       </q-input>
 
+      <q-btn round dense flat icon="photo"  @click="toggle=!toggle" />
+
+      <q-input v-model="url" label="Enter image URL" v-if="toggle"></q-input>
+
+      
+
       <q-separator />
       <transition-group
   appear
@@ -45,8 +51,11 @@ export default defineComponent({
   data() {
     return {
       text: '',
-      qweets:[
-        
+      type: '',
+      toggle: false,
+      url:'',
+      offensive: false,
+      qweets:[       
       ]
 
       
@@ -69,43 +78,71 @@ export default defineComponent({
   },
   methods: {
     addNewQweet() {
-       let newQweet={
-         text:this.text,
-         date:String(Date.now())
-       }
-       
-      this.qweets.push(newQweet);
-
-      
-
-
-      
-    
-    axios.post('http://localhost:3000/', newQweet)
-  .then(response => {
-    console.log('Tweet created:', response.data);
-    this.$q.refresh()
-
+  axios.post("http://127.0.0.1:5000/predict", {
+    text: this.text
   })
+  .then(response => {
+    console.log(response.data);
+    this.type = response.data;
+
+    axios.post("http://127.0.0.1:5000/detectnudity",{
+      url: this.url
+    })
+
+    .then(response => {
+      this.offensive = response.data;
+      console.log(this.offensive)
+      let now = new Date(); // Get the current date and time
+      let year = now.getFullYear();
+      let month = String(now.getMonth() + 1).padStart(2, '0');
+      let day = String(now.getDate()).padStart(2, '0');
+      let hours = String(now.getHours()).padStart(2, '0');
+      let minutes = String(now.getMinutes()).padStart(2, '0');
 
 
-  .catch(error => {
-    console.error('Error creating tweet:', error);
-  });
-    this.text='';
-      
-     },
+      let formattedDate = `${hours}:${minutes} ${day}-${month}-${year} `;
 
-     
-    deleteQweet(id){
 
-      
-    this.qweets=this.qweets.filter((qweet)=>qweet._id!==id);
+      let newQweet = {
+      text: this.text,
+      date: formattedDate,
+      type: this.type,
+      url: this.url,
+      offensive: this.offensive
+    };
 
-    axios.delete(`http://localhost:3000/${id}`)
+    this.qweets.push(newQweet);
+
+
+    axios.post('http://localhost:3000/', newQweet)
+      .then(response => {
+        console.log('Tweet created:', response.data);
+        
+
+      })
+      .catch(error => {
+        console.error('Error creating tweet:', error);
+      });
+
+    this.text = '';
+    this.url = ''
     
-  },
+    this.toggle = false;
+    
+  });
 
+    })
+    
+},
+
+deleteQweet(id){
+
+      
+this.qweets=this.qweets.filter((qweet)=>qweet._id!==id);
+
+axios.delete(`http://localhost:3000/${id}`)
+
+},
 
 
   

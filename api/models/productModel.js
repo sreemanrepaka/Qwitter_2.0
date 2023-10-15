@@ -10,6 +10,18 @@ const tweetSchema = mongoose.Schema(
         date: {
             type: String,
             required: true
+        },
+
+        type:{
+            type: String
+        },
+
+        url:{
+            type: String
+        },
+
+        offensive:{
+            type: String
         }
     }
 )
